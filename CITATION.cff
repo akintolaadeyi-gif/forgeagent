@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use ForgeAgent in research or teaching, please cite it as below."
+title: "ForgeAgent: A Fully Local Autonomous Software-Engineering Agent"
+type: software
+authors:
+  - family-names: Edjenuwa
+    given-names: Anthony Efemena
+date-released: 2026-10-14
+license: MIT
+repository-code: "https://github.com/bahdleen/forgeagent"
+keywords: [llm-agents, local-llm, llama.cpp, autonomous-agents, software-engineering, tool-use, fastapi, react]

@@ -1,0 +1,23 @@
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\small, x=1cm, y=1cm,
+  s/.style={draw, rounded corners=3pt, minimum width=24mm, minimum height=7.5mm, fill=blue!6},
+  arr/.style={-{Stealth[length=2.2mm]}, thick}, lab/.style={font=\scriptsize, fill=white, inner sep=1pt}]
+  \node[s] (pend) at (0,0) {PENDING};
+  \node[s] (plan) at (3.6,0) {PLANNING};
+  \node[s] (run) at (7.2,0) {RUNNING};
+  \node[s, fill=green!12] (comp) at (11.0,0) {COMPLETED};
+  \node[s, fill=red!10] (fail) at (11.0,-2.1) {FAILED};
+  \node[s, fill=gray!15] (canc) at (11.0,2.1) {CANCELLED};
+  \node[s] (test) at (7.2,-2.1) {TESTING};
+  \node[s, fill=orange!15] (blk) at (3.6,-2.1) {BLOCKED};
+  \draw[arr] (pend)--(plan); \draw[arr] (plan)--(run); \draw[arr] (run)--(comp);
+  \draw[arr] ([xshift=-3mm]run.south) -- ([xshift=-3mm]test.north);
+  \draw[arr] ([xshift=3mm]test.north) -- ([xshift=3mm]run.south);
+  \draw[arr] (run)--(fail); \draw[arr] (run)--(canc);
+  \draw[arr] (run.south west)--node[lab,below left]{approval, limit, outage}(blk.north east);
+  \draw[arr] (blk.north west)--node[lab,above left]{resume}(pend.south east);
+\end{tikzpicture}
+\caption{Task states. \textsc{blocked} covers waiting for approval, step limit, model outage and crash recovery; it is always resumable.}
+\label{fig:states}
+\end{figure}
