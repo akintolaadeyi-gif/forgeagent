@@ -1,6 +1,8 @@
 """Application configuration (environment / .env driven)."""
 from __future__ import annotations
 
+import os
+import shutil
 from functools import lru_cache
 from pathlib import Path
 
@@ -22,8 +24,8 @@ class EnvSettings(BaseSettings):
     llm_api_key: str = "sk-local"
 
     # llama.cpp process management (optional; the app can also attach to an already running server)
-    llama_server_path: str = r"C:\AI\llama.cpp\llama-server.exe"
-    models_dir: str = r"C:\AI\Models"
+    llama_server_path: str = r"C:\AI\llama.cpp\llama-server.exe" if os.name == "nt" else (shutil.which("llama-server") or "")
+    models_dir: str = r"C:\AI\Models" if os.name == "nt" else str(Path.home() / "models")
     llama_gpu_layers: int = 99
     llama_extra_args: str = ""
 

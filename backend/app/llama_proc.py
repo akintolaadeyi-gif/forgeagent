@@ -53,8 +53,8 @@ class LlamaServerManager:
         if self.running:
             raise RuntimeError("llama-server is already running (stop it first).")
         exe = Path(get_env().llama_server_path)
-        if not exe.exists():
-            raise FileNotFoundError(f"llama-server not found at {exe}. Set FORGE_LLAMA_SERVER_PATH.")
+        if not exe.is_file():
+            raise FileNotFoundError(f"llama-server not found ('{get_env().llama_server_path}'). Install llama.cpp or set FORGE_LLAMA_SERVER_PATH.")
         mp = Path(model_path)
         if not mp.exists():
             raise FileNotFoundError(f"Model file not found: {mp}")

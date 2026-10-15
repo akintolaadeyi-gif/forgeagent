@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import re
+import shutil
 import sqlite3
 import sys
 from pathlib import Path
@@ -22,7 +24,7 @@ def _venv_python(root: Path) -> str:
     for cand in (root / ".venv" / "Scripts" / "python.exe", root / ".venv" / "bin" / "python"):
         if cand.exists():
             return f'"{cand}"'
-    return "python"
+    return "python" if os.name == "nt" or shutil.which("python") else "python3"
 
 
 def _fmt_proc(r, header: str) -> str:

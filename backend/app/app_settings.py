@@ -58,7 +58,7 @@ class PromptSettings(BaseModel):
         "- Match the existing code style and conventions of the project.\n"
         "- Write clear, typed, modular code with error handling and input validation at boundaries.\n"
         "- Do not leave placeholders or TODO stubs where working code is required.\n"
-        "- Python: create and use a project-local virtualenv (`python -m venv .venv`, then `.venv/Scripts/python -m pip ...` on Windows) "
+        "- Python: create and use a project-local virtualenv (`python -m venv .venv`, then `.venv/bin/python -m pip ...` on macOS/Linux or `.venv/Scripts/python -m pip ...` on Windows) "
         "instead of installing packages into the global interpreter. Pin dependencies in requirements.txt.\n"
         "- Node: use the project's package.json; keep node_modules out of Git (.gitignore)."
     )
@@ -83,7 +83,7 @@ class AutonomySettings(BaseModel):
     review_pass: bool = True  # planned runs end with a Reviewer pass (+ one Debugger fix round if it finds problems)
     command_timeout_s: int = 300
     allowed_command_prefixes: list[str] = Field(default_factory=lambda: [
-        "python", "py", "pip", "pytest", "uv", "node", "npm", "npx", "pnpm", "yarn", "tsc", "vite", "vitest",
+        "python", "python3", "py", "pip", "pip3", "pytest", "uv", "node", "npm", "npx", "pnpm", "yarn", "tsc", "vite", "vitest",
         "jest", "eslint", "prettier", "cargo", "go", "dotnet", "mvn", "gradle", "make", "cmake",
         "git status", "git diff", "git log", "git add", "git commit", "git branch", "git show", "git init",
         "git checkout -b", "git switch -c", "ls", "dir", "cat", "type", "echo", "pwd", "cd", "mkdir", "where",

@@ -24,7 +24,8 @@ class ProcResult:
 def find_shell() -> tuple[list[str], str]:
     """Return (argv prefix, human-readable name). Prefers Git Bash (bash syntax is the best-known by models)."""
     if os.name != "nt":
-        return ["/bin/bash", "-c"], "bash"
+        bash = shutil.which("bash")
+        return ([bash, "-c"], "bash") if bash else (["/bin/sh", "-c"], "sh")
     candidates = [
         os.environ.get("FORGE_SHELL", ""),
         r"C:\Program Files\Git\bin\bash.exe",

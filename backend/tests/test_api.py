@@ -218,3 +218,15 @@ def test_timestamps_carry_a_utc_offset(client):
 def test_resources_endpoint(client):
     r = client.get("/api/system/resources").json()
     assert r["ram_total_gb"] > 0 and "cpu_pct" in r
+
+
+def test_model_files_reports_missing_server(client, monkeypatch):
+    from app.config import get_env
+
+    monkeypatch.setenv("FORGE_LLAMA_SERVER_PATH", "")
+    get_env.cache_clear()
+    try:
+        assert client.get("/api/model/files").json()["llama_server_exists"] is False
+    finally:
+        monkeypatch.undo()
+        get_env.cache_clear()

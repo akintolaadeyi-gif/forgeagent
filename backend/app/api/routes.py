@@ -592,7 +592,7 @@ def model_stats(s: Session = Depends(get_session)):
 @router.get("/model/files")
 def model_files():
     return {"models_dir": get_env().models_dir, "llama_server": get_env().llama_server_path,
-            "llama_server_exists": Path(get_env().llama_server_path).exists(), "files": llama.list_models()}
+            "llama_server_exists": Path(get_env().llama_server_path).is_file(), "files": llama.list_models()}
 
 
 class ServerStart(BaseModel):
