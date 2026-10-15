@@ -57,6 +57,45 @@ def test_command_classification(workspace, cmd, expected):
     assert verdict == expected
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX absolute paths")
+@pytest.mark.parametrize("cmd", [
+    "cat /etc/passwd",
+    'cat "/etc/passwd"',
+    "ls /Users",
+    "head -5 /etc/hosts",
+    "mkdir /tmp/forge-escape",
+    "python /tmp/evil.py",
+    "echo hi > /tmp/out.txt",
+    "ls {ws}-other",  # sibling folder that merely shares a prefix with the workspace
+])
+def test_posix_paths_outside_workspace_need_approval(workspace, cmd):
+    verdict, why = classify_command(cmd.format(ws=workspace), workspace, AppSettings().autonomy)
+    assert verdict == "approval" and any("outside workspace" in w for w in why)
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX absolute paths")
+@pytest.mark.parametrize("cmd", [
+    "ls {ws}",
+    "cat {ws}/a.txt",
+    "python -m pytest {ws}/tests",
+    "ls > /dev/null",
+    "python -c \"print('a/b')\"",
+    "grep -r todo src/",
+    "python scripts/run.py --out=build/x",
+])
+def test_posix_paths_inside_workspace_stay_automatic(workspace, cmd):
+    verdict, why = classify_command(cmd.format(ws=workspace), workspace, AppSettings().autonomy)
+    assert verdict == "auto", why
+
+
+def test_inside_ws_respects_path_boundaries():
+    from app.security import _inside_ws
+
+    assert _inside_ws(r"c:\ws\proj", r"c:\ws\proj")
+    assert _inside_ws(r"c:\ws\proj\a.txt", r"c:\ws\proj")
+    assert not _inside_ws(r"c:\ws\proj-other\a.txt", r"c:\ws\proj")
+
+
 @pytest.mark.parametrize("cmd,expected", [
     # separators inside quotes are data, not command boundaries (regression: this was wrongly flagged)
     ('.venv/Scripts/python -c "from main import app; print([r.path for r in app.routes])"', "auto"),

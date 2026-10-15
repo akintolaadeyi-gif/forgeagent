@@ -95,7 +95,17 @@ _NETWORK = [r"\bcurl\b", r"\bwget\b", r"\binvoke-webrequest\b", r"\binvoke-restm
 _DEPLOY = [r"\bdeploy\b", r"\bvercel\b", r"\bnetlify\b", r"\bfirebase\s+deploy", r"\bheroku\b", r"\baws\b", r"\baz\s", r"\bgcloud\b", r"\bnpm\s+publish", r"\btwine\s+upload"]
 _SECRETS = [r"\.env\b", r"\bprintenv\b", r"\bget-childitem\s+env:", r"\benv:\w+", r"\bset\s*$", r"id_rsa", r"\.ssh", r"credential"]
 _ABS_PATH = re.compile(r"(?<![\w/\\])([A-Za-z]:[\\/][^\s\"'|;&<>]*)|(?<![\w.])(\.\.[\\/])|(?<![\w:])(~[\\/])")
+# POSIX absolute paths (/etc/passwd, "/tmp/x", --out=/var/y). Not matched when the slash continues a word, a URL
+# ("https://x/y"), a relative path ("a/b", "./x") or a "~/" / "$VAR/" prefix. Only used on non-Windows hosts.
+_POSIX_ABS = re.compile(r"(?<![\w.:/\\~$])(/[^\s\"'|;&<>()`]*)")
+_SAFE_DEVICES = {"/dev/null", "/dev/stdout", "/dev/stderr"}
 _CHAIN = re.compile(r"(\|\||&&|;|\||\n|`|\$\()")
+
+def _inside_ws(norm: str, ws: str) -> bool:
+    """True when `norm` is the workspace itself or lies below it, compared on a path-separator boundary
+    (a plain startswith would also accept a sibling such as C:\\ws\\proj-other for C:\\ws\\proj)."""
+    return norm == ws or norm.startswith(ws.rstrip("\\") + "\\")
+
 
 def split_chain(cmd: str) -> list[str]:
     """Split a shell command into its sub-commands (; && || | newline), respecting quotes.
@@ -182,10 +192,20 @@ def classify_command(cmd: str, workspace: str | Path, autonomy: AutonomySettings
         token = m.group(0)
         if m.group(1):
             norm = os.path.normpath(token).lower()
-            if not norm.startswith(ws):
+            if not _inside_ws(norm, ws):
                 reasons.append(f"path outside workspace: {token}")
         else:
             reasons.append(f"path outside workspace: {token}")
+    if os.name != "nt":
+        ws_path = Path(workspace).resolve()
+        for m in _POSIX_ABS.finditer(cmd):
+            token = m.group(1)
+            if token in _SAFE_DEVICES:
+                continue
+            try:
+                Path(os.path.realpath(token)).relative_to(ws_path)
+            except ValueError:
+                reasons.append(f"path outside workspace: {token}")
     if not reasons:
         # every sub-command of a chain must start with an allowed prefix
         parts = [p.strip() for p in split_chain(low) if p.strip()]
