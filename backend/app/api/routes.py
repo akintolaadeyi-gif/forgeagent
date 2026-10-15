@@ -36,9 +36,12 @@ from ..tools.fs_tools import IGNORE_DIRS, atomic_write
 
 router = APIRouter(prefix="/api")
 
+_POSIX_SYSTEM_DIRS = ("/etc", "/usr", "/bin", "/sbin", "/lib", "/lib64", "/var", "/opt", "/boot", "/dev", "/proc", "/sys",
+                      "/root", "/srv", "/mnt", "/media", "/private", "/System", "/Library", "/Applications", "/Volumes")
 FORBIDDEN_ROOTS = [Path(p).resolve() for p in filter(None, [
     os.environ.get("SystemRoot"), os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)"),
-    os.environ.get("ProgramData"), str(Path.home()), str(Path.home().parent)])]
+    os.environ.get("ProgramData"), str(Path.home()), str(Path.home().parent),
+    *(_POSIX_SYSTEM_DIRS if os.name != "nt" else ())])]
 
 
 def _iso(d: datetime | None) -> str | None:
