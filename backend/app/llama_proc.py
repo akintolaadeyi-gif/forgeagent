@@ -66,6 +66,8 @@ class LlamaServerManager:
         kwargs: dict = {}
         if os.name == "nt":
             kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
+        else:
+            kwargs["start_new_session"] = True
         self.proc = await asyncio.create_subprocess_exec(*self.cmdline, cwd=str(exe.parent), stdin=asyncio.subprocess.DEVNULL,
                                                          stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT, **kwargs)
 

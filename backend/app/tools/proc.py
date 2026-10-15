@@ -46,7 +46,11 @@ def kill_tree(pid: int) -> None:
         else:
             import signal
 
-            os.killpg(os.getpgid(pid), signal.SIGKILL)
+            pgid = os.getpgid(pid)
+            if pgid == os.getpgrp():  # never signal our own process group
+                os.kill(pid, signal.SIGKILL)
+            else:
+                os.killpg(pgid, signal.SIGKILL)
     except Exception:
         pass
 
@@ -132,6 +136,8 @@ async def run_argv(argv: list[str], cwd: Path, timeout_s: int = 60, stdin: str |
     kwargs: dict = {}
     if os.name == "nt":
         kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    else:
+        kwargs["start_new_session"] = True
     proc = await asyncio.create_subprocess_exec(
         *argv, cwd=str(cwd), env=base_env(), stdin=asyncio.subprocess.PIPE if stdin is not None else asyncio.subprocess.DEVNULL,
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT, **kwargs)
