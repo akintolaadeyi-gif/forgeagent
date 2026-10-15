@@ -69,7 +69,8 @@ def test_files_api_and_traversal(client):
     assert client.get(f"/api/projects/{pid}/file", params={"path": "src/app.py"}).json()["content"] == "print(1)\n"
     tree = client.get(f"/api/projects/{pid}/tree").json()
     assert any(e["name"] == "src" and e["is_dir"] for e in tree)
-    for bad in ("../x.txt", "..\\..\\x.txt", "C:/Windows/win.ini"):
+    bad_paths = ["../x.txt"] + (["..\\..\\x.txt", "C:/Windows/win.ini"] if os.name == "nt" else [])
+    for bad in bad_paths:
         assert client.get(f"/api/projects/{pid}/file", params={"path": bad}).status_code == 400
         assert client.put(f"/api/projects/{pid}/file", json={"path": bad, "content": "x"}).status_code == 400
     assert client.put(f"/api/projects/{pid}/file", json={"path": ".git/config", "content": "x"}).status_code == 400

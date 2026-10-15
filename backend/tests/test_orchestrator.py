@@ -1,5 +1,6 @@
 """End-to-end agent-loop tests against a scripted fake LLM (real tools, real git, real subprocesses)."""
 import asyncio
+import os
 import sys
 
 import pytest
@@ -143,7 +144,8 @@ async def test_autonomous_mode_asks_for_destructive_command(orch, llm, project, 
 
 
 async def test_workspace_escape_and_traversal_refused(orch, llm, project, workspace):
-    llm.reply("", [("create_file", {"path": "../escape.txt", "content": "x"}), ("read_file", {"path": "C:/Windows/win.ini"})])
+    outside = "C:/Windows/win.ini" if os.name == "nt" else "/etc/hosts"
+    llm.reply("", [("create_file", {"path": "../escape.txt", "content": "x"}), ("read_file", {"path": outside})])
     llm.reply("", [("complete_task", {"status": "blocked", "summary": "cannot access outside workspace"})])
     tid = await orch.start_goal(project, "write outside", "never")
     await wait_done(orch, project)

@@ -17,7 +17,10 @@ def ctx_for(ws):
 
 def test_path_boundaries(workspace, tmp_path):
     assert resolve_in_workspace(workspace, "a/b.txt") == (workspace / "a" / "b.txt").resolve()
-    for bad in ("../x", "..\\x", str(tmp_path / "other.txt"), "a/../../x"):
+    bad_paths = ["../x", str(tmp_path / "other.txt"), "a/../../x"]
+    if os.name == "nt":
+        bad_paths.append("..\\x")
+    for bad in bad_paths:
         with pytest.raises(WorkspaceViolation):
             resolve_in_workspace(workspace, bad)
 
@@ -29,6 +32,15 @@ def test_junction_escape_blocked(workspace, tmp_path):
     import subprocess
 
     subprocess.run(["cmd", "/c", "mklink", "/J", str(workspace / "link"), str(outside)], capture_output=True, check=True)
+    with pytest.raises(WorkspaceViolation):
+        resolve_in_workspace(workspace, "link/secret.txt")
+
+
+@pytest.mark.skipif(os.name == "nt", reason="junction test covers Windows")
+def test_symlink_escape_blocked(workspace, tmp_path):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    os.symlink(outside, workspace / "link")
     with pytest.raises(WorkspaceViolation):
         resolve_in_workspace(workspace, "link/secret.txt")
 
