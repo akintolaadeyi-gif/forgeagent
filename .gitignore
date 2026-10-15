@@ -1,0 +1,19 @@
+data/
+backend/.venv/
+frontend/node_modules/
+frontend/dist/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+# LaTeX build artefacts (main.pdf is kept)
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.toc
+paper/*.bbl
+paper/*.blg
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz
+paper/build.log

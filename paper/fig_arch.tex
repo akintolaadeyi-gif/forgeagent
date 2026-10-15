@@ -1,0 +1,30 @@
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  font=\small, x=1cm, y=1cm,
+  box/.style={draw, rounded corners=2pt, align=center, minimum height=9mm, minimum width=29mm, fill=blue!5},
+  store/.style={draw, cylinder, shape border rotate=90, aspect=0.25, align=center, minimum height=11mm, minimum width=26mm, fill=yellow!12},
+  ext/.style={draw, rounded corners=2pt, align=center, minimum height=9mm, minimum width=29mm, fill=green!8},
+  arr/.style={-{Stealth[length=2.2mm]}, thick}, darr/.style={{Stealth[length=2.2mm]}-{Stealth[length=2.2mm]}, thick}]
+  \node[box] (ui) at (0,0) {React/TS UI\\(Monaco, timeline,\\approvals)};
+  \node[box] (api) at (4.3,0) {FastAPI\\REST + WebSocket};
+  \node[box, fill=orange!14] (orch) at (8.6,0) {Orchestrator\\plan $\rightarrow$ tasks $\rightarrow$ loop};
+  \node[box] (gw) at (8.6,2.2) {LLM gateway\\stream, cancel, repair};
+  \node[ext] (llama) at (8.6,4.4) {llama-server\\27B Q4\_K\_M};
+  \node[box] (pol) at (8.6,-2.2) {Permission policy\\allow\,\textbar\,ask\,\textbar\,deny};
+  \node[box] (tools) at (8.6,-4.4) {Typed tools\\fs, shell, git, db};
+  \node[ext] (ws) at (13.0,-4.4) {Workspace\\+ Git checkpoints};
+  \node[ext] (pw) at (13.0,-2.2) {Playwright\\Chromium};
+  \node[box] (ctx) at (4.3,-2.2) {Context manager\\budget\,\textbar\,compact};
+  \node[store] (db) at (4.3,-5.0) {SQLite: tasks, audit,\\messages, memory};
+  \draw[darr] (ui)--(api); \draw[arr] (api)--(orch);
+  \draw[darr] (orch)--(gw); \draw[darr] (gw)--(llama);
+  \draw[arr] (orch)--(pol); \draw[arr] (pol)--(tools);
+  \draw[arr] (tools)--(ws); \draw[arr] (tools.east) -- ++(1.2,0) |- (pw.east);
+  \draw[arr] (orch.south west) |- (ctx.east);
+  \draw[arr] (ctx)--(db);
+  \draw[arr] (tools.south) |- (db.east) node[pos=.75,below]{audit rows};
+\end{tikzpicture}
+\caption{ForgeAgent components. Arrows show the direction of calls. Every tool execution passes through the permission policy and is recorded in SQLite.}
+\label{fig:arch}
+\end{figure}

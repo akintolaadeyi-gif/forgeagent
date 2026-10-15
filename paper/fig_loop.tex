@@ -1,0 +1,40 @@
+\begin{figure}[t]
+\centering
+\resizebox{\linewidth}{!}{\begin{tikzpicture}[
+  font=\small, x=1cm, y=1cm,
+  p/.style={draw, rounded corners=2pt, fill=blue!6, align=center, minimum width=34mm, minimum height=7.5mm},
+  d/.style={draw, diamond, aspect=2.8, fill=yellow!12, align=center, inner sep=0.5pt},
+  arr/.style={-{Stealth[length=2.2mm]}, thick}, lab/.style={font=\scriptsize, fill=white, inner sep=1pt}]
+  \node[p] (req) at (0,0) {User request};
+  \node[p] (chk) at (0,-1.2) {Git checkpoint ``before''};
+  \node[d] (plan) at (0,-2.6) {Plan?};
+  \node[p, fill=orange!14] (arch) at (5.2,-2.6) {Architect: inspect,\\\code{submit_plan}};
+  \node[p] (llm) at (0,-4.4) {LLM call (streamed)};
+  \node[d] (calls) at (0,-6.1) {Tool calls?};
+  \node[p, fill=gray!12] (nudge) at (-4.8,-6.1) {Nudge, or accept\\text answer};
+  \node[d] (pol) at (0,-8.0) {Policy};
+  \node[p] (appr) at (5.2,-8.0) {User approves\\or denies};
+  \node[p] (exec) at (0,-9.9) {Execute tool,\\write audit row};
+  \node[d] (done) at (0,-11.8) {\code{complete_task}?};
+  \node[d] (guard) at (5.2,-11.8) {Tests failing?};
+  \node[p, fill=green!12] (rep) at (5.2,-13.6) {Report from audit log\\+ checkpoint};
+  \draw[arr] (req)--(chk); \draw[arr] (chk)--(plan);
+  \draw[arr] (plan)--node[lab,above]{complex}(arch);
+  \draw[arr] (arch.south)|-(llm.east);
+  \draw[arr] (plan)--node[lab,right]{simple}(llm);
+  \draw[arr] (llm)--(calls);
+  \draw[arr] (calls)--node[lab,right]{yes}(pol);
+  \draw[arr] (calls)--node[lab,above]{no}(nudge);
+  \draw[arr] (nudge.north)|-(llm.west);
+  \draw[arr] (pol)--node[lab,above]{ask}(appr);
+  \draw[arr] (pol)--node[lab,right]{allow}(exec);
+  \draw[arr] (appr.south)|-(exec.east);
+  \draw[arr] (exec)--(done);
+  \draw[arr] (done)--node[lab,above]{yes, success}(guard);
+  \draw[arr] (guard)--node[lab,right]{no}(rep);
+  \draw[arr] (done.west)--(-7.2,-11.8)--node[lab,left]{no: next step}(-7.2,-4.4)--(llm.west);
+  \draw[arr] (guard.east)--(8.2,-11.8)--node[lab,right,align=center]{yes: reject,\\model must fix}(8.2,-4.4)--(llm.east);
+\end{tikzpicture}}
+\caption{Simplified control flow. The ``Tests failing?'' guard and the audit-derived report separate ForgeAgent from a plain tool loop. (\emph{Stop} and the step/retry limits apply at every node.)}
+\label{fig:loop}
+\end{figure}
