@@ -3,15 +3,21 @@
 #   ./scripts/start-llama.sh                               # Q4_K_M if present, 16k context, auto GPU/CPU split
 #   ./scripts/start-llama.sh --context 32768 --gpu-layers 40
 #   ./scripts/start-llama.sh --model /path/to/model.gguf
-# Defaults: llama-server from FORGE_LLAMA_SERVER_PATH or your PATH; models from FORGE_MODELS_DIR or ~/models.
+# Defaults: llama-server from FORGE_LLAMA_SERVER_PATH (environment or the repo .env) or your PATH;
+# models from FORGE_MODELS_DIR (environment or .env) or ~/models.
 set -eu
 MODEL=""
 CONTEXT=16384
 GPU_LAYERS=-1        # -1 = let llama.cpp fit as many layers as memory allows
 PORT=8080
 KV=q8_0              # f16 | q8_0 | q4_0
-SERVER="${FORGE_LLAMA_SERVER_PATH:-$(command -v llama-server || true)}"
-MODELS_DIR="${FORGE_MODELS_DIR:-$HOME/models}"
+ENV_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/.env"
+# value of KEY in the repo's .env (the backend reads the same file); empty when absent
+env_get() { sed -n "s/^$1=//p" "$ENV_FILE" 2>/dev/null | tail -n 1 | tr -d '\r'; }
+SERVER="${FORGE_LLAMA_SERVER_PATH:-$(env_get FORGE_LLAMA_SERVER_PATH)}"
+[ -n "$SERVER" ] || SERVER="$(command -v llama-server || true)"
+MODELS_DIR="${FORGE_MODELS_DIR:-$(env_get FORGE_MODELS_DIR)}"
+[ -n "$MODELS_DIR" ] || MODELS_DIR="$HOME/models"
 EXTRA=""
 while [ $# -gt 0 ]; do
   case "$1" in
